@@ -1,10 +1,6 @@
-import pymysql
-import re
 import requests
 from bs4 import BeautifulSoup
-from pymysql import ProgrammingError, MySQLError
-
-from movie import Movie
+from pymysql import MySQLError
 
 
 def get_cities(url):
