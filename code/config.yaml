@@ -1,6 +1,0 @@
-mysql:
-  ip: localhost
-  user: root
-  password: "123"
-  database: movie
-start_url: "https://www.aaa.com/"
