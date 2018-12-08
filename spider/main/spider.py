@@ -90,7 +90,7 @@ def get_movie_detail(url):
     soup = BeautifulSoup(html.content, "html.parser")
 
 
-def exist_movie_detail(movie):
+def exist_movie_detail(db, movie):
     cursor = db.cursor()
     sql_select_city = "SELECT * FROM movie WHERE name = '%s'" % (movie)
     try:
