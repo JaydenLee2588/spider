@@ -34,7 +34,7 @@ if __name__ == "__main__":
     # 获取所有的theater hall
 
     # 获取movie detail
-    # url = "https://www.clickthecity.com/movies/detail/jw7a6F/amityville-the-first"
+    # movie_detail_url = config["movie_detail_url"]
     # movie = movie_detail.parse_movie_detail(url)
     # movie_detail.insert_movie_detail_mysql(db, movie)
 
