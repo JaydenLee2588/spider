@@ -6,13 +6,13 @@ from pymysql import ProgrammingError, MySQLError
 
 
 def parse_cities(url):
+    print("START pares cities : " + url)
     html = requests.get(url)
     soup = BeautifulSoup(html.content, "html.parser")
 
     city_items = soup.find("nav").find_all("li") #去掉前面几个链接
     city_list = []
     for i in city_items:
-        # print(i)
         if i.find("a").text == "Now Showing" or \
                 i.find("a").text == "Upcoming Movies" or \
                 i.find("a").text == "Trailers & Clips" or \
@@ -30,8 +30,7 @@ def parse_cities(url):
 
 # 判断城市记录是否存在，不存在则添加
 def insert_city_record_mysql(db, city):
-    # print("insert city recode")
-    # print("---" + city["name"] + " --- " + city["url"])
+    print("START insert city recode: " + city["name"] + " --- " + city["url"])
 
     cursor = db.cursor()
     sql_select_city = "SELECT * FROM CITY WHERE name = '%s'" % (city["name"])
@@ -57,6 +56,7 @@ def insert_city_record_mysql(db, city):
 
 # 查询所有的city记录
 def query_all_city_record(db):
+    print("START query all city records")
     city_list = []
     cursor = db.cursor()
     sql_select_city = "SELECT id, name, url FROM CITY"
@@ -71,7 +71,7 @@ def query_all_city_record(db):
 
             city_list.append(city)
     except MySQLError as e:
-        print("Error: unable to fetch data ")
+        print("Error: query_all_city_record : " + sql_select_city)
         print(e)
 
     return city_list

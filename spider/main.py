@@ -46,8 +46,10 @@ if __name__ == "__main__":
         for movie_temp in schedule_temp["movies"]:
             print(schedule_temp["hall_name"] + " === " + movie_temp["name"] + " === " + schedule_temp["show_time"])
             schedule_temp["theater_id"] = theater.get_theater_id(db, theater_name, theater_url)
-            schedule_temp["theater_hall_id"] = theater_hall.insert_if_not_exist_theater_hall(db, theater_name, theater_url)
-            print("=====")
-            schedule_temp["movie_id"] = movie_detail.insert_if_not_exist_movie(db, movie_temp["name"], movie_temp["detail_url"])
-            schedule_temp["show_date"] = schedule_temp["show_time"][0, 9]
-            schedule.insert_if_not_exist_schedule(db, schedule_temp)
+            schedule_temp["theater_hall_id"] = theater_hall.insert_if_not_exist_theater_hall(db, schedule_temp["hall_name"], schedule_temp["theater_id"])
+
+            movie = movie_detail.parse_movie_detail(movie_temp["detail_url"])
+            schedule_temp["movie_id"] = movie_detail.insert_if_not_exist_movie(db, movie)
+            schedule_temp["show_date"] = schedule_temp["show_time"][0: 10]
+            schedule.insert_if_not_exist_schedule(db, schedule_temp, theater_url)
+

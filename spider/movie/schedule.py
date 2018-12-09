@@ -5,10 +5,10 @@ from bs4 import BeautifulSoup
 from pymysql import ProgrammingError, MySQLError
 
 
-def insert_if_not_exist_schedule(db, schedule):
+def insert_if_not_exist_schedule(db, schedule, theater_url):
     schedule_id = query_schedule_id(db, schedule)
     if schedule_id == -1:
-        schedule = parse_schedule(schedule[""])
+        # schedule = parse_schedule(theater_url)
         insert_schedule(db, schedule)
         return query_schedule_id(db, schedule)
     else:
@@ -17,7 +17,7 @@ def insert_if_not_exist_schedule(db, schedule):
 
 def insert_schedule(db, schedule):
     cursor = db.cursor()
-    sql_insert_schedule = "INSERT INTO schedule(theater_id, theater_hall_id, movie_id, show_date, show_time)" \
+    sql_insert_schedule = "INSERT INTO movie_schedule(theater_id, theater_hall_id, movie_id, show_date, show_time)" \
                           " VALUES ('%s', '%s', '%s', '%s', '%s')" % \
                           (schedule["theater_id"], schedule["theater_hall_id"], schedule["movie_id"],
                            schedule["show_date"], schedule["show_time"])
@@ -26,34 +26,35 @@ def insert_schedule(db, schedule):
         cursor.execute(sql_insert_schedule)
         # 提交到数据库执行
         db.commit()
-        print("insert success: " + schedule["name"])
+        print("insert success: " + sql_insert_schedule)
     except MySQLError as e:
         print("Caught a MySQLError Error: ")
         print(e)
         # 如果发生错误则回滚
-        print("Insert city error: " + schedule["name"])
+        print("Insert city error: " + sql_insert_schedule)
 
         db.rollback()
 
 
 def query_schedule_id(db, schedule):
     cursor = db.cursor()
-    sql_select_movie = "SELECT id FROM movie WHERE theater_id = '%s' " \
+    sql_select_movie = "SELECT id FROM movie_schedule WHERE theater_id = '%s' " \
                        "AND theater_hall_id = '%s' " \
                        "AND movie_id = '%s' "\
-                       "AND show_date = '%s'" \
-                       "AND show_time = '%s'" % \
+                       "AND show_date = '%s' " \
+                       "AND show_time = '%s' " % \
                        (schedule["theater_id"], schedule["theater_hall_id"], schedule["movie_id"],
                         schedule["show_date"], schedule["show_time"])
+    print(sql_select_movie)
     try:
         rowcount = cursor.execute(sql_select_movie)
         if rowcount > 0:
             # 执行sql语句
-            return cursor.fetchone()
+            return cursor.fetchone()[0]
         else:
             return -1
     except MySQLError:
-        print("Caught a MySQLError Error while query query_movie_id: " + movie_name)
+        print("Caught a MySQLError Error while query query_schedule_id: " + str(schedule["movie_id"]))
 
 
 # 获取movie的schedule
@@ -78,7 +79,7 @@ def parse_schedule(theater_url):
         movies = []
         for html_movie in html_hall.find_all("li"):
             movie = {}
-            movie["detail_url"] = html_movie.select('a[itemprop=url]')[1].get("href")
+            movie["detail_url"] = html_movie.select('a[itemprop=url]')[0].get("href")
             movie["name"] = html_movie.select('span[itemprop="name"]')[0].text
             print(movie["name"] + " : " + movie["detail_url"])
 
