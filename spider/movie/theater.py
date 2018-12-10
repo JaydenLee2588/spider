@@ -1,59 +1,95 @@
-import pymysql
-import re
 import requests
 from bs4 import BeautifulSoup
-from pymysql import ProgrammingError, MySQLError
+from pymysql import MySQLError
+from utiles import transfer_content
+
+
+def insert_if_not_exist_theater(db, theater, city):
+    schedule_id = query_theater_id(db, theater["name"], city["id"])
+    if schedule_id == -1:
+        insert_theater_record(db, theater, city)
+        return query_theater_id(db, theater["name"], city["id"])
+    else:
+        return schedule_id
 
 
 # 判断电影院记录是否存在，不存在则添加
 def insert_theater_record(db, theater, city):
+    print("START insert_theater_record: " + theater["name"] + " - " + city["name"])
     cursor = db.cursor()
-    sql_select_city_id = "SELECT id FROM CITY WHERE name = '%s'" % (city["name"])
+    sql_insert_theater = "INSERT INTO theater(name, city_id, url) VALUES \
+                    ('%s', '%d', '%s')" % (transfer_content(theater["name"]), city["id"], theater["url"])
     try:
-        # 获取city_id
-        cursor.execute(sql_select_city_id)
-        city_id = cursor.fetchone()[0]
-
-        sql_select_theater = "SELECT * FROM theater WHERE name = '%s' AND city_id= '%d'" % (theater["name"], city_id)
-        sql_insert_theater = "INSERT INTO theater(name, city_id, url) VALUES \
-                ('%s', '%d', '%s')" % (theater["name"], city_id, theater["url"])
-
-        # 判断是否存在cinema记录，不存在，则插入
-        rowcount = cursor.execute(sql_select_theater)
-        if rowcount == 0:
-            # 执行sql语句
-            cursor.execute(sql_insert_theater)
-            # 提交到数据库执行
-            db.commit()
-            print("insert success: " + theater["name"])
-        else:
-            print("exist:" + theater["name"])
+        cursor.execute(sql_insert_theater)
+        db.commit()
+        print("insert success: " + theater["name"] + " - " + city["name"])
     except MySQLError as e:
-        print("Caught a MySQLError Error: ")
+        print("Caught a MySQLError Error while insert_theater_record: " + sql_insert_theater)
         print(e)
         # 如果发生错误则回滚
-        print("Insert cinema error: " + theater["name"])
-
         db.rollback()
 
 
-def get_theater_id(db, theater_name, theater_url):
-    print(theater_name + " : " + theater_url)
+def query_theater_id(db, theater_name, city_id):
+    print("START query_theater_id: " + theater_name + " - " + str(city_id))
     cursor = db.cursor()
-    sql_select_theater_hall_id = "SELECT id FROM theater WHERE name = '%s' AND url = '%s'" \
-                                 % (theater_name, theater_url)
+    sql_select_theater_id = "SELECT id FROM theater WHERE name = '%s' AND city_id = '%s'" \
+                                 % (transfer_content(theater_name), city_id)
     try:
-        # 获取theater_hall_id
-        rowcount = cursor.execute(sql_select_theater_hall_id)
-
+        rowcount = cursor.execute(sql_select_theater_id)
         if rowcount > 0:
-            # 执行sql语句
             return cursor.fetchone()[0]
         else:
             return -1
     except MySQLError as e:
-        print("Caught a MySQLError Error: ")
+        print("Caught a MySQLError Error while get_theater_id: " + sql_select_theater_id)
+
+
+# theater
+def query_all_theater_record(db):
+    print("START query all theater records")
+    theater_list = []
+    cursor = db.cursor()
+    sql_select_theater = "SELECT id, name, city_id, url FROM theater"
+    try:
+        cursor.execute(sql_select_theater)
+        results = cursor.fetchall()
+        for row in results:
+            theater = {}
+            theater['id'] = row[0]
+            theater['name'] = row[1]
+            theater['city_id'] = row[2]
+            theater['url'] = row[3]
+
+            theater_list.append(theater)
+    except MySQLError as e:
+        print("Error: query_all_theater_record : " + sql_select_theater)
         print(e)
+
+    return theater_list
+
+
+def query_theater_record_by_id(db, id):
+    print("START query all theater records")
+    theater_list = []
+    cursor = db.cursor()
+    sql_select_theater = "SELECT id, name, city_id, url FROM theater WHERE id >= %s " % (id)
+    try:
+        cursor.execute(sql_select_theater)
+        results = cursor.fetchall()
+        for row in results:
+            theater = {}
+            theater['id'] = row[0]
+            theater['name'] = row[1]
+            theater['city_id'] = row[2]
+            theater['url'] = row[3]
+
+            theater_list.append(theater)
+    except MySQLError as e:
+        print("Error: query_theater_record_by_id : " + sql_select_theater)
+        print(e)
+
+    return theater_list
 
 
 def parse_theaters(name, city_url, start_url):

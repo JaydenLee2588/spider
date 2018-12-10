@@ -76,16 +76,39 @@ def parse_movie_detail(url):
     try:
         movie["mtrcb_rating"] = detail_html.find("span", itemprop="contentRating").text
     except AttributeError:
-        movie["mtrcb_rating"] = ""
-    movie["genre"] = detail_html.find("span", itemprop="genre").text
-    movie["duration"] = detail_html.find("span", itemprop="duration").text
-    movie["thumbnail_url"] = detail_html.find("meta", itemprop="thumbnailUrl")["content"]
-    movie["description"] = detail_html.find("div", itemprop="description").text
-
-    movie["main_cast"] = detail_html.find("dl", class_="moviedetail").dd.text
-    movie["director"] = detail_html.find("span", itemprop="director").text
-    movie["writer"] = detail_html.find("span", itemprop="author").text
-    movie["production_company"] = detail_html.find("span", itemprop="productionCompany").text
+        movie["mtrcb_rating"] = "none"
+    try:
+        movie["genre"] = detail_html.find("span", itemprop="genre").text
+    except AttributeError:
+        movie["genre"] = "none"
+    try:
+        movie["duration"] = detail_html.find("span", itemprop="duration").text
+    except AttributeError:
+        movie["duration"] = "none"
+    try:
+        movie["thumbnail_url"] = detail_html.find("meta", itemprop="thumbnailUrl")["content"]
+    except AttributeError:
+        movie["thumbnail_url"] = "none"
+    try:
+        movie["description"] = detail_html.find("div", itemprop="description").text
+    except AttributeError:
+        movie["description"] = "none"
+    try:
+        movie["main_cast"] = detail_html.find("dl", class_="moviedetail").dd.text
+    except AttributeError:
+        movie["main_cast"] = "none"
+    try:
+        movie["director"] = detail_html.find("span", itemprop="director").text
+    except AttributeError:
+        movie["director"] = "none"
+    try:
+        movie["writer"] = detail_html.find("span", itemprop="author").text
+    except AttributeError:
+        movie["writer"] = "none"
+    try:
+        movie["production_company"] = detail_html.find("span", itemprop="productionCompany").text
+    except AttributeError:
+        movie["production_company"] = "none"
 
     print("movie_name: " + movie["name"] +
           "movie_year: " + movie["year"] +
