@@ -94,7 +94,9 @@ def query_theater_record_by_id(db, id):
 
 def parse_theaters(name, city_url, start_url):
     # print(city_url)
-    html = requests.get(city_url)
+    header = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.110 Safari/537.36'}
+    html = requests.get(url=city_url, headers=header)
     soup = BeautifulSoup(html.content, "html.parser")
 
     theater_items = soup.find_all("div", class_="establishment")

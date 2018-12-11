@@ -9,14 +9,14 @@ def insert_movie_detail(db, movie):
     print("start insert movie recode :" + movie["name"])
 
     sql_insert_movie = """INSERT INTO movie(name, year, mtrcb_rating, genre, duration, thumbnail_url, 
-                        description, director, main_cast, writer, production_company) VALUES 
-                        ('%s', '%s', '%s', '%s', '%s','%s', '%s', '%s', '%s', '%s', '%s')""" % \
-                       (movie["name"], movie["year"],
-                        movie["mtrcb_rating"], movie["genre"],
-                        movie["duration"], movie["thumbnail_url"],
-                        transfer_content(movie["description"]), movie["director"],
-                        movie["main_cast"], movie["writer"],
-                        movie["production_company"])
+                        description, director, main_cast, writer, production_company, url) VALUES 
+                        ('%s', '%s', '%s', '%s', '%s','%s', '%s', '%s', '%s', '%s', '%s', '%s')""" % \
+                       (transfer_content(movie["name"]), transfer_content(movie["year"]),
+                        transfer_content(movie["mtrcb_rating"]), transfer_content(movie["genre"]),
+                        transfer_content(movie["duration"]), transfer_content(movie["thumbnail_url"]),
+                        transfer_content(movie["description"]), transfer_content(movie["director"]),
+                        transfer_content(movie["main_cast"]), transfer_content(movie["writer"]),
+                        transfer_content(movie["production_company"]), transfer_content(movie["url"]))
     cursor = db.cursor()
     try:
         # 执行sql语句
@@ -32,10 +32,11 @@ def insert_movie_detail(db, movie):
         db.rollback()
 
 
-def query_movie_id(db, movie_name):
+def query_movie_id(db, movie_name,  movie_url):
     print("start query_movie_id: " + movie_name)
     cursor = db.cursor()
-    sql_select_movie = "SELECT * FROM movie WHERE name = '%s' " % (movie_name)
+    sql_select_movie = "SELECT * FROM movie WHERE name = '%s' AND url = '%s' " % \
+                       (transfer_content(movie_name), transfer_content(movie_url))
     movie_id = -1
     try:
         rowcount = cursor.execute(sql_select_movie)
@@ -51,10 +52,10 @@ def query_movie_id(db, movie_name):
 
 def insert_if_not_exist_movie(db, movie):
     print("enter insert_if_not_exist_movie : " + movie["name"])
-    movie_id = query_movie_id(db, movie["name"])
+    movie_id = query_movie_id(db, movie["name"], movie["url"])
     if movie_id == -1:
         insert_movie_detail(db, movie)
-        return query_movie_id(db, movie["name"])
+        return query_movie_id(db, movie["name"], movie["url"])
     else:
         return movie_id
 
@@ -63,11 +64,14 @@ def insert_if_not_exist_movie(db, movie):
 def parse_movie_detail(url):
     print("start parse movie detail: " + url)
 
-    html = requests.get(url)
+    header = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.110 Safari/537.36'}
+    html = requests.get(url=url, headers=header)
     soup = BeautifulSoup(html.content, "html.parser")
     movie = {}
     detail_html = soup.find("div", id="container")
 
+    movie["url"] = url
     movie["name"] = detail_html.find("h1").find("span", itemprop="name").text
     try:
         movie["year"] = detail_html.find("h1").find("span", class_="year").text[1:5]

@@ -53,7 +53,8 @@ def query_all_city_record(db):
 
 def parse_cities(url):
     print("START pares cities : " + url)
-    html = requests.get(url)
+    header = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.110 Safari/537.36'}
+    html = requests.get(url=url, headers=header)
     soup = BeautifulSoup(html.content, "html.parser")
 
     city_items = soup.find("nav").find_all("li") #去掉前面几个链接

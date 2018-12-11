@@ -53,7 +53,9 @@ def query_schedule_id(db, schedule):
 # 获取movie的schedule
 def parse_schedule(theater_url):
     print("START parse_schedule: " + theater_url)
-    html = requests.get(theater_url)
+    header = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.110 Safari/537.36'}
+    html = requests.get(url=theater_url, headers=header)
     soup = BeautifulSoup(html.content, "html.parser")
 
     schedules = []

@@ -51,7 +51,9 @@ def insert_if_not_exist_theater_hall(db, theater_hall_name, theater_id):
 # 获取cinema hall
 def parse_theater_hall(theater_name, theater_url):
     print("get theater hall")
-    html = requests.get(theater_url)
+    header = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.110 Safari/537.36'}
+    html = requests.get(url=theater_url, headers=header)
     soup = BeautifulSoup(html.content, "html.parser")
 
     theater_halls = []
