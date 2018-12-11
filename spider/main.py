@@ -1,6 +1,6 @@
 import yaml
 import pymysql
-
+import time
 import city
 import theater
 import movie_detail
@@ -17,10 +17,10 @@ if __name__ == "__main__":
     start_url = config['start_url']
 
     # # 获取所有的city
-    city_list = city.parse_cities(start_url)
-    for city_temp in city_list:
-        print(city_temp['name'])
-        city.insert_city_record(db, city_temp)
+    # city_list = city.parse_cities(start_url)
+    # for city_temp in city_list:
+    #     print(city_temp['name'])
+    #     city.insert_city_record(db, city_temp)
     #
     # # 获取所有的theater
     # city_list = city.query_all_city_record(db)
@@ -37,19 +37,25 @@ if __name__ == "__main__":
     # movie_detail.insert_movie_detail_mysql(db, movie)
 
     # 获取schedule
-    # theater_list = theater.query_all_theater_record(db)
-    # # theater_list = theater.query_theater_record_by_id(db, 124)
-    # for theater_temp in theater_list:
-    # # theater_name = config["theater_name"]
-    # # theater_url = config["theater_url"]
-    #     schedules = schedule.parse_schedule(theater_temp["url"])
-    #     for schedule_temp in schedules:
-    #         for movie_temp in schedule_temp["movies"]:
-    #             print(schedule_temp["hall_name"] + " === " + movie_temp["name"] + " === " + schedule_temp["show_time"])
-    #             schedule_temp["theater_id"] = theater.query_theater_id(db, theater_temp["name"], theater_temp["city_id"])
-    #             schedule_temp["theater_hall_id"] = theater_hall.insert_if_not_exist_theater_hall(db, schedule_temp["hall_name"], schedule_temp["theater_id"])
-    #
-    #             movie = movie_detail.parse_movie_detail(movie_temp["detail_url"])
-    #             schedule_temp["movie_id"] = movie_detail.insert_if_not_exist_movie(db, movie)
-    #             schedule_temp["show_date"] = schedule_temp["show_time"][0: 10]
-    #             schedule.insert_if_not_exist_schedule(db, schedule_temp)
+    theater_list = theater.query_all_theater_record(db)
+    # theater_list = theater.query_theater_record_by_id(db, 124)
+    for theater_temp in theater_list:
+    # theater_name = config["theater_name"]
+    # theater_url = config["theater_url"]
+        schedules = schedule.parse_schedule(theater_temp["url"])
+        for schedule_temp in schedules:
+            time.sleep(1)
+            for movie_temp in schedule_temp["movies"]:
+                time.sleep(1)
+                print(schedule_temp["hall_name"] + " === " + movie_temp["name"] + " === " + schedule_temp["show_time"])
+                schedule_temp["theater_id"] = theater.query_theater_id(db, theater_temp["name"], theater_temp["city_id"])
+                schedule_temp["theater_hall_id"] = theater_hall.insert_if_not_exist_theater_hall(db, schedule_temp["hall_name"], schedule_temp["theater_id"])
+
+                movie_id = movie_detail.query_movie_id(db, movie_temp["name"], movie_temp["detail_url"])
+                if movie_id == -1:
+                    movie = movie_detail.parse_movie_detail(movie_temp["detail_url"])
+                    schedule_temp["movie_id"] = movie_detail.insert_if_not_exist_movie(db, movie)
+                else:
+                    schedule_temp["movie_id"] = movie_id
+                schedule_temp["show_date"] = schedule_temp["show_time"][0: 10]
+                schedule.insert_if_not_exist_schedule(db, schedule_temp)
